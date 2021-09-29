@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 public class Transaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id_transaction", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_transaction")
     private Long idTransaction;
 
     @Column(name = "date", nullable = false, columnDefinition = "TIMESTAMP")
@@ -32,13 +32,11 @@ public class Transaction {
     @Column(name = "cost_100", precision = 6, scale = 2)
     private BigDecimal cost100;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}
-            , optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "user_debtor", referencedColumnName = "id_user")
     private User userDebtor;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}
-            , optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "user_creditor", referencedColumnName = "id_user")
     private User userCreditor;
 
