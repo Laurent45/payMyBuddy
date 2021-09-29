@@ -65,6 +65,14 @@ public class User {
         this.password = password;
     }
 
+    public User(String lastName, String firstName, String email, String password, float balance) {
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.email = email;
+        this.password = password;
+        this.balance = balance;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

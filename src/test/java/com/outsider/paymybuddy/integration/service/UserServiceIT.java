@@ -2,7 +2,6 @@ package com.outsider.paymybuddy.integration.service;
 
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.service.impl.UserServiceImpl;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,28 +30,59 @@ class UserServiceIT {
 
         assertThat(userSaved).isEqualTo(user);
         assertThat(userSaved.getIdUser()).isNotZero();
+
+        userService.deleteUser(userSaved.getIdUser());
     }
 
     @Test
     void whenGetAllUsers_thenReturnIterableUsers() {
-        assertThat(userService.getUserById(1).get().getLastName()).isEqualTo(
-                "Harden");
+        List<User> someUsers = List.of(
+                new User("harden", "james", "jamesharden@gmail.com",
+                        "password", 0.00F),
+                new User("allen", "ray", "rayallen@gmail.com", "password",
+                        0.00F)
+        );
+
         List<User> result = userService.getUsers();
 
-        assertThat(result.size()).isGreaterThanOrEqualTo(3);
+        assertThat(result.size()).isGreaterThanOrEqualTo(4);
+        assertThat(result).containsAll(someUsers);
     }
 
     @Test
     void givenId_whenGetUserById_thenReturnUser() {
-        assertThat(userService.getUserById(1).get().getLastName()).isEqualTo(
-                "Harden");
-        assertThat(userService.getUsers().size()).isEqualTo(3);
-        User user = new User("Harden", "James", "jamesharden@gmail.com",
+        User user = new User("harden", "james", "jamesharden@gmail.com",
                 "password");
 
         Optional<User> result = userService.getUserById(1L);
 
         assertThat(result).isNotEmpty().contains(user);
+    }
+
+    @Test
+    void givenUserAndId_whenUpdateUser_thenReturnUserUpdated() {
+        User user = new User();
+        user.setFirstName("kevin");
+        user.setLastName("durant");
+        user.setEmail("kevindurant@gmail.com");
+
+        User userUpdated = userService.updateUser(5L, user);
+
+        assertThat(userUpdated.getLastName()).isEqualTo("durant");
+        assertThat(userUpdated.getFirstName()).isEqualTo("kevin");
+        assertThat(userUpdated.getEmail()).isEqualTo("kevindurant@gmail.com");
+    }
+
+    @Test
+    void givenId_whenDeleteUser_thenReturn() {
+        User user = new User("Bond", "James", "jamesbond@gmail.com",
+                "password");
+        user = userService.addUser(user);
+        int usersCount = userService.getUsers().size();
+
+        userService.deleteUser(user.getIdUser());
+
+        assertThat(userService.getUsers().size()).isEqualTo(usersCount - 1);
     }
 
 }

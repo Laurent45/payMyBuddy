@@ -21,9 +21,23 @@ public interface IUserService {
     List<User> getUsers();
 
     /**
-     * Read - get a user by id
+     * Read - get a user by id.
      * @param idUser - id's user
      * @return An optional user object
      */
     Optional<User> getUserById(long idUser);
+
+    /**
+     * Update - update an existing user.
+     * @param id - id's user to update
+     * @param user - a user object with new fields
+     * @return A user object updated
+     */
+    User updateUser(long id, User user);
+
+    /**
+     * Delete - delete a user by id.
+     * @param idUser - id's user to delete
+     */
+    void deleteUser(Long idUser);
 }
