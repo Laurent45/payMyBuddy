@@ -1,7 +1,7 @@
 package com.outsider.paymybuddy.service;
 
-import com.outsider.paymybuddy.exception.ConstraintOfCreationNonRespected;
-import com.outsider.paymybuddy.exception.EmailAlreadyUsed;
+import com.outsider.paymybuddy.exception.ConstraintErrorException;
+import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.model.User;
 
 import java.util.List;
@@ -13,9 +13,9 @@ public interface IUserService {
      * Create - add a new User.
      * @param user - a user Object
      * @return A user object saved in database
-     * @throws EmailAlreadyUsed - email already used
+     * @throws EmailAlreadyUsedException - email already used
      */
-    User addUser(User user) throws EmailAlreadyUsed, ConstraintOfCreationNonRespected;
+    User addUser(User user) throws EmailAlreadyUsedException, ConstraintErrorException;
 
     /**
      * Read - get all users.
@@ -36,7 +36,7 @@ public interface IUserService {
      * @param user - a user object with new fields
      * @return A user object updated
      */
-    User updateUser(long id, User user) throws EmailAlreadyUsed;
+    User updateUser(long id, User user) throws EmailAlreadyUsedException;
 
     /**
      * Delete - delete a user by id.

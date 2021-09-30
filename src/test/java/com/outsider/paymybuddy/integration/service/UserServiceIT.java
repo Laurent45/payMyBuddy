@@ -1,7 +1,7 @@
 package com.outsider.paymybuddy.integration.service;
 
-import com.outsider.paymybuddy.exception.ConstraintOfCreationNonRespected;
-import com.outsider.paymybuddy.exception.EmailAlreadyUsed;
+import com.outsider.paymybuddy.exception.ConstraintErrorException;
+import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,8 @@ class UserServiceIT {
         Test of creating a user in DB
      */
     @Test
-    void givenUser_whenAddUser_thenReturnUserSaved() throws EmailAlreadyUsed, ConstraintOfCreationNonRespected {
+    void givenUser_whenAddUser_thenReturnUserSaved()
+            throws Exception {
         User user = new User("Frazier"
                 , "Jo"
                 , "frazierjo@gmail.com"
@@ -46,7 +47,7 @@ class UserServiceIT {
                 "password");
 
         assertThatThrownBy(() -> userService.addUser(user))
-                .isInstanceOf(EmailAlreadyUsed.class);
+                .isInstanceOf(EmailAlreadyUsedException.class);
     }
 
     @Test
@@ -54,7 +55,7 @@ class UserServiceIT {
         User user = new User();
 
         assertThatThrownBy(() -> userService.addUser(user))
-                .isInstanceOf(ConstraintOfCreationNonRespected.class);
+                .isInstanceOf(ConstraintErrorException.class);
     }
 
     /*
@@ -102,7 +103,7 @@ class UserServiceIT {
 
     @Test
     void givenUserAndId_whenUpdateUser_thenReturnUserUpdated()
-            throws EmailAlreadyUsed {
+            throws EmailAlreadyUsedException {
         User user = new User();
         user.setFirstName("kevin");
         user.setLastName("durant");
@@ -124,7 +125,7 @@ class UserServiceIT {
         user.setEmail("mikejames@gmail.com");
 
         assertThatThrownBy(() -> userService.updateUser(1L, user))
-                .isInstanceOf(EmailAlreadyUsed.class);
+                .isInstanceOf(EmailAlreadyUsedException.class);
     }
 
     /*
@@ -132,7 +133,8 @@ class UserServiceIT {
      */
 
     @Test
-    void givenId_whenDeleteUser_thenReturn() throws EmailAlreadyUsed, ConstraintOfCreationNonRespected {
+    void givenId_whenDeleteUser_thenReturn()
+            throws Exception {
         User user = new User("Bond", "James", "jamesbond@gmail.com",
                 "password");
         user = userService.addUser(user);
