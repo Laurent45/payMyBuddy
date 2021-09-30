@@ -40,6 +40,8 @@ class TransferServiceIT {
         assertThat(result).isNotNull();
         assertThat(result.getIdTransfer()).isNotNull();
         assertThat(result.getUser()).isNotNull();
+
+        transferService.deleteTransferById(result.getIdTransfer());
     }
 
     @Test
@@ -104,6 +106,8 @@ class TransferServiceIT {
 
         assertThat(transferService.getTransferById(result.getIdTransfer())).isEmpty();
     }
+
+
 
 
 
