@@ -38,12 +38,12 @@ public class Transfer {
     @JoinColumn(name = "user", referencedColumnName = "id_user")
     private User user;
 
-    public Transfer(LocalDateTime date, TransferType type,
-                    PaymentMethod paymentMethod, float amount) {
+    public Transfer(LocalDateTime date, TransferType type, PaymentMethod paymentMethod, float amount, User user) {
         this.date = date;
         this.type = type;
         this.paymentMethod = paymentMethod;
         this.amount = amount;
+        this.user = user;
     }
 
     @Override

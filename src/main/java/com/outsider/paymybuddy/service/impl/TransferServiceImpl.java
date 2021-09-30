@@ -1,8 +1,10 @@
 package com.outsider.paymybuddy.service.impl;
 
-import com.outsider.paymybuddy.exception.ConstraintErrorException;
+import com.outsider.paymybuddy.exception.AmountTransferException;
 import com.outsider.paymybuddy.exception.UserUnknownException;
+import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
+import com.outsider.paymybuddy.model.TransferType;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.repository.TransferRepository;
 import com.outsider.paymybuddy.repository.UserRepository;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -22,29 +25,9 @@ public class TransferServiceImpl implements ITransferService {
     private final UserRepository userRepository;
 
     @Override
-    public Transfer addTransfer(Transfer transfer, String email)
-            throws UserUnknownException, ConstraintErrorException {
+    public Transfer addTransfer(Transfer transfer) {
         log.debug("addTransfer method called, parameter -> transfer: "
-                + transfer + "/ email: " + email);
-
-        if (transfer.getDate() == null
-                || transfer.getType() == null
-                || transfer.getPaymentMethod() == null
-                || transfer.getAmount() == 0F) {
-            log.error("some fields not null are null");
-            throw new ConstraintErrorException("some fields not null are null");
-        }
-
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (userOptional.isEmpty()) {
-            log.error("user with email: '"+ email +"' not " +
-                    "found");
-            throw new UserUnknownException("user with email: '"+ email +"' not " +
-                    "found");
-        }
-
-        transfer.setUser(userOptional.get());
-
+                + transfer);
         return transferRepository.save(transfer);
     }
 
@@ -88,7 +71,41 @@ public class TransferServiceImpl implements ITransferService {
 
     @Override
     public void deleteTransferById(Long id) {
-        log.debug("deleteTransferById method called, paramter -> id: " + id);
+        log.debug("deleteTransferById method called, parameter -> id: " + id);
         transferRepository.deleteById(id);
+    }
+
+    @Override
+    public void makeTransfer(String email, TransferType type, PaymentMethod paymentMethod, float amount)
+            throws UserUnknownException, AmountTransferException {
+        log.debug(String.format("makeTransfer method called, parameters -> " +
+                "email: %s / transferType: %s / paymentMethod: %s / amount " +
+                "%f", email, type.toString(), paymentMethod.toString(), amount));
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isEmpty()) {
+            log.error("not found user with email: " + email);
+            throw new UserUnknownException("user not found");
+        }
+        User user = optionalUser.get();
+        float actualBalance = user.getBalance();
+
+        if (type == TransferType.CREDIT) {
+            user.setBalance(actualBalance + amount);
+        } else if (type == TransferType.DEBIT) {
+            if (actualBalance >= amount) {
+                user.setBalance(actualBalance - amount);
+            } else {
+                log.error("the amount transfer is " +
+                        "greater than balance user");
+                throw new AmountTransferException("the amount transfer is " +
+                        "greater than balance user");
+            }
+        }
+        userRepository.save(user);
+
+        Transfer transferRunning = new Transfer(LocalDateTime.now(), type,
+                paymentMethod, amount, user);
+        addTransfer(transferRunning);
     }
 }

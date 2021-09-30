@@ -1,15 +1,20 @@
 package com.outsider.paymybuddy.integration.service;
 
+import com.outsider.paymybuddy.exception.AmountTransferException;
 import com.outsider.paymybuddy.exception.ConstraintErrorException;
-import com.outsider.paymybuddy.exception.UserUnknownException;
+import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
 import com.outsider.paymybuddy.model.TransferType;
+import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.service.impl.TransferServiceImpl;
+import com.outsider.paymybuddy.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -22,47 +27,12 @@ class TransferServiceIT {
 
     @Autowired
     private TransferServiceImpl transferService;
+    @Autowired
+    private UserServiceImpl userService;
 
     /*
         Test of creating a transfer in DB.
      */
-    @Test
-    void givenTransferAndEmail_whenAddTransfer_thenReturnTransferSaved()
-            throws Exception {
-        Transfer transfer = new Transfer(LocalDateTime.now(),
-                TransferType.DEBIT,
-                PaymentMethod.BANK_TRANSFER,
-                40.34F);
-        String email = "lebronjames@gmail.com";
-
-        Transfer result = transferService.addTransfer(transfer, email);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getIdTransfer()).isNotNull();
-        assertThat(result.getUser()).isNotNull();
-
-        transferService.deleteTransferById(result.getIdTransfer());
-    }
-
-    @Test
-    void givenTransferAndEmailUnknown_whenAddTransfer_throwUserUnknown() {
-        Transfer transfer = new Transfer(LocalDateTime.now(),
-                TransferType.DEBIT,
-                PaymentMethod.BANK_TRANSFER,
-                40.34F);
-        String email = "unknown_email@gmail.com";
-
-        assertThatThrownBy(() -> transferService.addTransfer(transfer, email))
-                .isInstanceOf(UserUnknownException.class);
-    }
-
-    @Test
-    void givenTransferIncompleteAndEmail_whenAddTransfer_throwConstraintViolation() {
-        Transfer transfer = new Transfer();
-        String email = "lebronjames@gmail.com";
-        assertThatThrownBy(() -> transferService.addTransfer(transfer, email))
-                .isInstanceOf(ConstraintErrorException.class);
-    }
 
     /*
         Test of reading one or many transfers.
@@ -95,16 +65,81 @@ class TransferServiceIT {
     @Test
     void givenId_whenDeleteTransferById_thenTransferDeleted()
             throws Exception {
+        User user = new User("deejay", "yaw", "deejayyaw@gmail.com", "password");
+        user = userService.addUser(user);
         Transfer transfer = new Transfer(LocalDateTime.now(),
                 TransferType.DEBIT,
                 PaymentMethod.BANK_TRANSFER,
-                40.34F);
-        String email = "lebronjames@gmail.com";
-        Transfer result = transferService.addTransfer(transfer, email);
+                40.34F, user);
+        Transfer result = transferService.addTransfer(transfer);
 
         transferService.deleteTransferById(result.getIdTransfer());
 
         assertThat(transferService.getTransferById(result.getIdTransfer())).isEmpty();
+
+        userService.deleteUser(user.getIdUser());
+    }
+
+    /*
+        Test about interaction between user and transfer
+     */
+    @Test
+    void givenEmailAndInformationTransfer_whenMakeTransfer_thenReturnUser()
+            throws Exception {
+        String email = "rayallen@gmail.com";
+        Optional<User> user = userService.getUserByEmail(email);
+        float balance = user.get().getBalance();
+        TransferType type = TransferType.CREDIT;
+        PaymentMethod paymentMethod = PaymentMethod.BANK_TRANSFER;
+        float amount = 45.00F;
+
+        transferService.makeTransfer(email, type, paymentMethod, amount);
+
+        Optional<User> userUpdate = userService.getUserByEmail(email);
+        float balanceUpdate = userUpdate.get().getBalance();
+
+        assertThat(balanceUpdate - balance).isEqualTo(amount);
+    }
+
+    @Test
+    void givenInformationTransfer_whenMakeTransfer_thenUpdateBalanceUser()
+            throws Exception {
+        float actualBalance = 234.00F;
+        float amountTransfer = 135.87F;
+        User user = new User("deejay", "yaw", "deejayyaw@gmail.com",
+                "password", actualBalance);
+
+        user = userService.addUser(user);
+
+        transferService.makeTransfer("deejayyaw@gmail.com",
+                TransferType.DEBIT, PaymentMethod.BANK_TRANSFER, amountTransfer);
+
+        Optional<User> userUpdate = userService.getUserById(user.getIdUser());
+        float balanceUpdate = userUpdate.get().getBalance();
+
+        BigDecimal result =
+                new BigDecimal(actualBalance - amountTransfer).setScale(2, RoundingMode.HALF_UP);
+        assertThat(balanceUpdate).isEqualTo(result.floatValue());
+
+        userService.deleteUser(user.getIdUser());
+    }
+
+    @Test
+    void givenBadAmountTransfer_whenMakeTransferDebit_throwAmountTransferException()
+            throws Exception {
+        float actualBalance = 234.00F;
+        float amountTransfer = 356.23F;
+        User user = new User("deejay", "yaw", "deejayyaw@gmail.com",
+                "password", actualBalance);
+
+        user = userService.addUser(user);
+
+        assertThatThrownBy(() -> transferService.makeTransfer("deejayyaw" +
+                        "@gmail.com",
+                TransferType.DEBIT, PaymentMethod.BANK_TRANSFER, amountTransfer))
+                .isInstanceOf(AmountTransferException.class);
+
+        userService.deleteUser(user.getIdUser());
     }
 
 

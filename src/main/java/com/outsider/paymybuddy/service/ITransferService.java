@@ -1,22 +1,23 @@
 package com.outsider.paymybuddy.service;
 
+import com.outsider.paymybuddy.exception.AmountTransferException;
 import com.outsider.paymybuddy.exception.ConstraintErrorException;
 import com.outsider.paymybuddy.exception.UserUnknownException;
+import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
+import com.outsider.paymybuddy.model.TransferType;
 
 import java.util.Optional;
 
 public interface ITransferService {
+
+
     /**
-     * Create - Create a transfer and join to a user.
-     * @param transfer - a Transfer object.
-     * @param email - an email's user in DB
-     * @return - a transfer object saved
-     * @throws UserUnknownException - user with this email not found
-     * @throws ConstraintErrorException - some fields not null are null
+     * Create - create a transfer
+     * @param transfer - a Transfer object to saved in DB
+     * @return a Transfer object saved
      */
-    Transfer addTransfer(Transfer transfer, String email)
-            throws UserUnknownException, ConstraintErrorException;
+    Transfer addTransfer(Transfer transfer);
 
     /**
      * Read - Get a Transfer object by id
@@ -38,4 +39,13 @@ public interface ITransferService {
      * @param id - id's Transfer object
      */
     void deleteTransferById(Long id);
+
+    /**
+     * Make a transfer between the balance of a user and an external account.
+     * @param email - email that identify a user
+     * @param type - type of transfer
+     * @param paymentMethod - method payment
+     * @param amount - amount of transfer
+     */
+    void makeTransfer(String email, TransferType type, PaymentMethod paymentMethod, float amount) throws UserUnknownException, ConstraintErrorException, AmountTransferException;
 }
