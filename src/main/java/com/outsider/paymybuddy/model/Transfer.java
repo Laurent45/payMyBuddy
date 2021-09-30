@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 public class Transfer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id_transfer", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_transfer")
     private Long idTransfer;
 
     @Column(name = "date", nullable = false, columnDefinition = "TIMESTAMP")
@@ -38,5 +38,11 @@ public class Transfer {
     @JoinColumn(name = "user", referencedColumnName = "id_user")
     private User user;
 
-
+    public Transfer(LocalDateTime date, TransferType type, PaymentMethod paymentMethod, BigDecimal amount, User user) {
+        this.date = date;
+        this.type = type;
+        this.paymentMethod = paymentMethod;
+        this.amount = amount;
+        this.user = user;
+    }
 }
