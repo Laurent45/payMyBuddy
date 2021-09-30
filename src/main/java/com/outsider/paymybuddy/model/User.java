@@ -46,7 +46,6 @@ public class User {
                     , nullable = false)},
             inverseJoinColumns = {@JoinColumn(name = "id_user_connected",
                     referencedColumnName = "id_user", nullable = false)})
-
     private Set<User> usersConnected;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
@@ -88,5 +87,17 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(lastName, firstName, email, password, balance);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "idUser=" + idUser +
+                ", lastName='" + lastName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", balance=" + balance +
+                '}';
     }
 }
