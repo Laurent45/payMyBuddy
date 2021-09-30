@@ -1,7 +1,7 @@
 package com.outsider.paymybuddy.service.impl;
 
-import com.outsider.paymybuddy.exception.ConstraintOfCreationNonRespected;
-import com.outsider.paymybuddy.exception.EmailAlreadyUsed;
+import com.outsider.paymybuddy.exception.ConstraintErrorException;
+import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.repository.UserRepository;
 import com.outsider.paymybuddy.service.IUserService;
@@ -20,11 +20,11 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
 
     @Override
-    public User addUser(User user) throws EmailAlreadyUsed, ConstraintOfCreationNonRespected {
+    public User addUser(User user) throws EmailAlreadyUsedException, ConstraintErrorException {
         log.debug("addUser method called, parameter -> User: " + user);
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new EmailAlreadyUsed("email already used");
+            throw new EmailAlreadyUsedException("email already used");
         }
 
         if (user.getFirstName() == null
@@ -32,7 +32,7 @@ public class UserServiceImpl implements IUserService {
                 || user.getEmail() == null
                 || user.getPassword() == null) {
             log.error("some fields with not null constraint are null");
-            throw new ConstraintOfCreationNonRespected("some fields with not " +
+            throw new ConstraintErrorException("some fields with not " +
                     "null constraint are null");
         }
 
@@ -54,12 +54,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public User updateUser(long id, User user) throws EmailAlreadyUsed {
+    public User updateUser(long id, User user) throws EmailAlreadyUsedException {
         log.debug("updateUser method called, parameter -> idUser: " + id + "/" +
                 " user: " + user);
 
         Optional<User> userToUpdate = userRepository.findById(id);
-
         if (userToUpdate.isEmpty()) {
             log.debug("none user in DB with id: " + id);
             return null;
@@ -76,7 +75,7 @@ public class UserServiceImpl implements IUserService {
             if (user.getEmail() != null) {
                 if (userRepository.findByEmail(user.getEmail()).isPresent()) {
                     log.error("email already used -> " + user.getEmail());
-                    throw new EmailAlreadyUsed("email already used -> " + user.getEmail());
+                    throw new EmailAlreadyUsedException("email already used -> " + user.getEmail());
                 }
                 currentUser.setEmail(user.getEmail());
             }
