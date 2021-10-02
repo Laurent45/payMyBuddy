@@ -2,10 +2,11 @@ package com.outsider.paymybuddy.service;
 
 import com.outsider.paymybuddy.exception.ConstraintErrorException;
 import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
+import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.model.User;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 public interface IUserService {
 
@@ -28,7 +29,7 @@ public interface IUserService {
      * @param idUser - id's user
      * @return An optional user object
      */
-    Optional<User> getUserById(long idUser);
+    User getUserById(long idUser) throws UserUnknownException;
 
     /**
      * Update - update an existing user.
@@ -36,7 +37,7 @@ public interface IUserService {
      * @param user - a user object with new fields
      * @return A user object updated
      */
-    User updateUser(long id, User user) throws EmailAlreadyUsedException;
+    User updateUser(long id, User user) throws EmailAlreadyUsedException, UserUnknownException;
 
     /**
      * Delete - delete a user by id.
@@ -49,5 +50,31 @@ public interface IUserService {
      * @param email - a string that represents email
      * @return An optional user object
      */
-    Optional<User> getUserByEmail(String email);
+    User getUserByEmail(String email) throws UserUnknownException;
+
+    /**
+     * Read - get all users connected of the user identified by its email.
+     * @param email - email's user
+     * @return A user list of users connected
+     * @throws UserUnknownException - email identified none user
+     */
+    Set<User> getAllUsersConnected(String email) throws UserUnknownException;
+
+    /**
+     * Read - get all emails of users connected of the user identified by its
+     * email.
+     * @param email - email's user
+     * @return An email list of users connected
+     */
+    List<String> getEmailsOfUsersConnected(String email) throws UserUnknownException;
+
+    /**
+     * Update - add or delete a connection
+     * @param emailUser - email's user
+     * @param emailUserConnected - email user connected to manage
+     * @param addRemove - true -> add / false -> remove
+     */
+    void manageAConnection(String emailUser, String emailUserConnected,
+                           boolean addRemove)
+            throws UserUnknownException;
 }

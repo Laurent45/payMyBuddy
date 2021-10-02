@@ -1,8 +1,6 @@
 package com.outsider.paymybuddy.integration.service;
 
 import com.outsider.paymybuddy.exception.AmountTransferException;
-import com.outsider.paymybuddy.exception.ConstraintErrorException;
-import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
 import com.outsider.paymybuddy.model.TransferType;
@@ -87,18 +85,22 @@ class TransferServiceIT {
     void givenEmailAndInformationTransfer_whenMakeTransfer_thenReturnUser()
             throws Exception {
         String email = "rayallen@gmail.com";
-        Optional<User> user = userService.getUserByEmail(email);
-        float balance = user.get().getBalance();
+        User user = userService.getUserByEmail(email);
+        float balance = user.getBalance();
         TransferType type = TransferType.CREDIT;
         PaymentMethod paymentMethod = PaymentMethod.BANK_TRANSFER;
         float amount = 45.00F;
 
         transferService.makeTransfer(email, type, paymentMethod, amount);
 
-        Optional<User> userUpdate = userService.getUserByEmail(email);
-        float balanceUpdate = userUpdate.get().getBalance();
+        User userUpdate = userService.getUserByEmail(email);
+        float balanceUpdate = userUpdate.getBalance();
 
         assertThat(balanceUpdate - balance).isEqualTo(amount);
+
+        user.setBalance(0F);
+        user.setEmail(null);
+        userService.updateUser(user.getIdUser(), user);
     }
 
     @Test
@@ -114,8 +116,8 @@ class TransferServiceIT {
         transferService.makeTransfer("deejayyaw@gmail.com",
                 TransferType.DEBIT, PaymentMethod.BANK_TRANSFER, amountTransfer);
 
-        Optional<User> userUpdate = userService.getUserById(user.getIdUser());
-        float balanceUpdate = userUpdate.get().getBalance();
+        User userUpdate = userService.getUserById(user.getIdUser());
+        float balanceUpdate = userUpdate.getBalance();
 
         BigDecimal result =
                 new BigDecimal(actualBalance - amountTransfer).setScale(2, RoundingMode.HALF_UP);

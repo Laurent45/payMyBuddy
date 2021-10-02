@@ -2,6 +2,7 @@ package com.outsider.paymybuddy.service.impl;
 
 import com.outsider.paymybuddy.exception.ConstraintErrorException;
 import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
+import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.repository.UserRepository;
 import com.outsider.paymybuddy.service.IUserService;
@@ -10,7 +11,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -20,10 +22,11 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
 
     @Override
-    public User addUser(User user) throws EmailAlreadyUsedException, ConstraintErrorException {
+    public User addUser(User user)
+            throws EmailAlreadyUsedException, ConstraintErrorException {
         log.debug("addUser method called, parameter -> User: " + user);
 
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (isEmailAlreadyExist(user.getEmail())) {
             throw new EmailAlreadyUsedException("email already used");
         }
 
@@ -31,7 +34,6 @@ public class UserServiceImpl implements IUserService {
                 || user.getLastName() == null
                 || user.getEmail() == null
                 || user.getPassword() == null) {
-            log.error("some fields with not null constraint are null");
             throw new ConstraintErrorException("some fields with not " +
                     "null constraint are null");
         }
@@ -47,24 +49,22 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Optional<User> getUserById(long idUser) {
+    public User getUserById(long idUser) throws UserUnknownException {
         log.debug("getUserById method called, parameter -> idUser: " + idUser);
 
-        return userRepository.findById(idUser);
+        return userRepository.findById(idUser)
+                .orElseThrow(() -> new UserUnknownException("none user in " +
+                        "DB with id: " + idUser));
     }
 
     @Override
-    public User updateUser(long id, User user) throws EmailAlreadyUsedException {
+    public User updateUser(long id, User user)
+            throws EmailAlreadyUsedException, UserUnknownException {
         log.debug("updateUser method called, parameter -> idUser: " + id + "/" +
                 " user: " + user);
 
-        Optional<User> userToUpdate = userRepository.findById(id);
-        if (userToUpdate.isEmpty()) {
-            log.debug("none user in DB with id: " + id);
-            return null;
-        }
+        User currentUser = getUserById(id);
 
-        User currentUser = userToUpdate.get();
         if (user != null) {
             if (user.getFirstName() != null) {
                 currentUser.setFirstName(user.getFirstName());
@@ -72,10 +72,13 @@ public class UserServiceImpl implements IUserService {
             if (user.getLastName() != null) {
                 currentUser.setLastName(user.getLastName());
             }
-            if (user.getEmail() != null) {
-                if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-                    log.error("email already used -> " + user.getEmail());
-                    throw new EmailAlreadyUsedException("email already used -> " + user.getEmail());
+            if (user.getEmail() != null
+                    && !user.getEmail().equals(currentUser.getEmail())) {
+
+                if (isEmailAlreadyExist(user.getEmail())) {
+                    throw new EmailAlreadyUsedException("email already used -> "
+                            + user.getEmail());
+
                 }
                 currentUser.setEmail(user.getEmail());
             }
@@ -96,9 +99,59 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Optional<User> getUserByEmail(String email) {
-        log.debug("getUserByEmail method is called, parameter -> email: " + email);
+    public User getUserByEmail(String email) throws UserUnknownException {
+        log.debug("getUserByEmail method is called, parameter -> email: "
+                + email);
 
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserUnknownException("none user with " +
+                        "this email: " + email));
     }
+
+    @Override
+    public Set<User> getAllUsersConnected(String email)
+            throws UserUnknownException {
+        log.debug("getAllUsersConnected method called, parameter -> email: "
+                + email);
+        User user = getUserByEmail(email);
+
+        return user.getUsersConnected();
+    }
+
+    @Override
+    public List<String> getEmailsOfUsersConnected(String email)
+            throws UserUnknownException {
+        log.debug("getEmailsOfUsersConnected method called, parameter -> " +
+                "email: " + email);
+        Set<User> users = getAllUsersConnected(email);
+
+        return users.stream()
+                .map(User::getEmail)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void manageAConnection(String emailUser, String emailUserConnected,
+                                  boolean addRemove)
+            throws UserUnknownException {
+        log.debug("deleteAConnection method called, parameters -> emailUser: "
+                + emailUser + "/ emailToDelete: " + emailUserConnected + "/ " +
+                "addRemove: " + addRemove);
+
+        User user = getUserByEmail(emailUser);
+        User userConnected = getUserByEmail(emailUserConnected);
+
+        if (addRemove) {
+            user.addConnection(userConnected);
+        } else {
+            user.removeConnection(userConnected);
+        }
+
+        userRepository.save(user);
+    }
+
+    private boolean isEmailAlreadyExist (String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
 }

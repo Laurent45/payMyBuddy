@@ -40,12 +40,11 @@ public class User {
      */
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "connection", joinColumns = {
-            @JoinColumn(name = "id_user"
-                    , referencedColumnName = "id_user"
-                    , nullable = false)},
-            inverseJoinColumns = {@JoinColumn(name = "id_user_connected",
-                    referencedColumnName = "id_user", nullable = false)})
+    @JoinTable(name = "connection",
+            joinColumns = {
+            @JoinColumn(name = "id_user", referencedColumnName = "id_user")},
+            inverseJoinColumns = {
+            @JoinColumn(name = "id_user_connected", referencedColumnName = "id_user")})
     private Set<User> usersConnected;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
@@ -56,6 +55,15 @@ public class User {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "userCreditor")
     private Set<Transaction> transactionsCreditor;
+
+
+    public void removeConnection(User user) {
+        this.getUsersConnected().remove(user);
+    }
+
+    public void addConnection(User user) {
+        this.getUsersConnected().add(user);
+    }
 
     public User(String lastName, String firstName, String email, String password) {
         this.lastName = lastName;
