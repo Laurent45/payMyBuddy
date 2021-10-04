@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +30,8 @@ public class UserServiceImpl implements IUserService {
         log.debug("addUser method called, parameter -> User: " + user);
 
         if (isEmailAlreadyExist(user.getEmail())) {
-            throw new EmailAlreadyUsedException("email already used");
+            throw new EmailAlreadyUsedException("email already used: "
+                    + user.getEmail());
         }
 
         if (user.getFirstName() == null
@@ -58,6 +62,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    @Transactional
     public User updateUser(long id, User user)
             throws EmailAlreadyUsedException, UserUnknownException {
         log.debug("updateUser method called, parameter -> idUser: " + id + "/" +
@@ -78,12 +83,14 @@ public class UserServiceImpl implements IUserService {
                 if (isEmailAlreadyExist(user.getEmail())) {
                     throw new EmailAlreadyUsedException("email already used -> "
                             + user.getEmail());
-
                 }
                 currentUser.setEmail(user.getEmail());
             }
             if (user.getPassword() != null) {
                 currentUser.setPassword(user.getPassword());
+            }
+            if (user.getBalance() != null) {
+                currentUser.setBalance(user.getBalance());
             }
             return userRepository.save(currentUser);
         }

@@ -1,20 +1,18 @@
 package com.outsider.paymybuddy.service.impl;
 
-import com.outsider.paymybuddy.exception.AmountTransferException;
-import com.outsider.paymybuddy.exception.UserUnknownException;
+import com.outsider.paymybuddy.exception.*;
 import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
 import com.outsider.paymybuddy.model.TransferType;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.repository.TransferRepository;
-import com.outsider.paymybuddy.repository.UserRepository;
 import com.outsider.paymybuddy.service.ITransferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +20,7 @@ import java.util.Optional;
 public class TransferServiceImpl implements ITransferService {
 
     private final TransferRepository transferRepository;
-    private final UserRepository userRepository;
+    private final UserServiceImpl userService;
 
     @Override
     public Transfer addTransfer(Transfer transfer) {
@@ -32,25 +30,23 @@ public class TransferServiceImpl implements ITransferService {
     }
 
     @Override
-    public Optional<Transfer> getTransferById(long id) {
+    public Transfer getTransferById(long id) throws TransferUnknownException {
         log.debug("getTransferById method is called, parameter -> id: " + id);
-        return transferRepository.findById(id);
+
+        return transferRepository.findById(id)
+                .orElseThrow(() -> new TransferUnknownException("none " +
+                        "transfer with id: " + id));
     }
 
     @Override
-    public Transfer updateTransfer(long id, Transfer transfer) {
+    public Transfer updateTransfer(long id, Transfer transfer) throws TransferUnknownException {
         log.debug("updateTransfer method is called, parameter -> id: " + id
                 + "/ transfer: " + transfer);
 
-        Optional<Transfer> optionalTransfer = transferRepository.findById(id);
-        if (optionalTransfer.isEmpty()) {
-            log.debug("none transfer in DB with id: " + id);
-            return null;
-        }
+        Transfer currentTransfer = getTransferById(id);
 
-        Transfer currentTransfer = optionalTransfer.get();
-        if (transfer != null) {
-            if (transfer.getAmount() != 0) {
+        if (currentTransfer != null && transfer != null) {
+            if (transfer.getAmount() != null) {
                 currentTransfer.setAmount(transfer.getAmount());
             }
             if (transfer.getDate() != null) {
@@ -76,36 +72,37 @@ public class TransferServiceImpl implements ITransferService {
     }
 
     @Override
-    public void makeTransfer(String email, TransferType type, PaymentMethod paymentMethod, float amount)
-            throws UserUnknownException, AmountTransferException {
+    public Transfer makeTransfer(String email
+            , TransferType type
+            , PaymentMethod paymentMethod
+            , BigDecimal amount)
+            throws UserUnknownException
+            , AmountTransferException
+            , EmailAlreadyUsedException {
         log.debug(String.format("makeTransfer method called, parameters -> " +
                 "email: %s / transferType: %s / paymentMethod: %s / amount " +
                 "%f", email, type.toString(), paymentMethod.toString(), amount));
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) {
-            log.error("not found user with email: " + email);
-            throw new UserUnknownException("user not found");
-        }
-        User user = optionalUser.get();
-        float actualBalance = user.getBalance();
+        User user = userService.getUserByEmail(email);
+        BigDecimal actualBalance = user.getBalance();
 
         if (type == TransferType.CREDIT) {
-            user.setBalance(actualBalance + amount);
+            user.setBalance(actualBalance.add(amount));
         } else if (type == TransferType.DEBIT) {
-            if (actualBalance >= amount) {
-                user.setBalance(actualBalance - amount);
+
+            if (actualBalance.compareTo(amount) >= 0) {
+                user.setBalance(actualBalance.subtract(amount));
             } else {
-                log.error("the amount transfer is " +
-                        "greater than balance user");
                 throw new AmountTransferException("the amount transfer is " +
                         "greater than balance user");
             }
-        }
-        userRepository.save(user);
 
+        }
+
+        userService.updateUser(user.getIdUser(), user);
         Transfer transferRunning = new Transfer(LocalDateTime.now(), type,
                 paymentMethod, amount, user);
-        addTransfer(transferRunning);
+
+        return addTransfer(transferRunning);
     }
 }

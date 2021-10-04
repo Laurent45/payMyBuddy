@@ -1,20 +1,21 @@
 package com.outsider.paymybuddy.integration.service;
 
 import com.outsider.paymybuddy.exception.AmountTransferException;
+import com.outsider.paymybuddy.exception.TransferUnknownException;
 import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
 import com.outsider.paymybuddy.model.TransferType;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.service.impl.TransferServiceImpl;
 import com.outsider.paymybuddy.service.impl.UserServiceImpl;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -24,34 +25,51 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TransferServiceIT {
 
     @Autowired
-    private TransferServiceImpl transferService;
+    private TransferServiceImpl transferServiceSUT;
     @Autowired
     private UserServiceImpl userService;
 
-    /*
-        Test of creating a transfer in DB.
-     */
+    private Transfer transfer;
+    private User user;
 
-    /*
-        Test of reading one or many transfers.
-     */
-    @Test
-    void givenId_whenGetTransferById_thenReturnTransfer() {
-        Optional<Transfer> result = transferService.getTransferById(2L);
-
-        assertThat(result).isNotEmpty();
+    @BeforeEach
+    void setUp() {
+        transfer = null;
+        user = null;
     }
 
-    /*
-        Test of updating a transfer.
-     */
-    @Test
-    void givenTransferAndId_whenUpdateTransfer_thenReturnTransferUpdated() {
-        Transfer transfer = new Transfer();
-        transfer.setType(TransferType.DEBIT);
-        transfer.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
+    @AfterEach
+    void tearDown() {
+        if (transfer != null)
+            transferServiceSUT.deleteTransferById(transfer.getIdTransfer());
+        if (user != null)
+            userService.deleteUser(user.getIdUser());
+    }
 
-        Transfer result = transferService.updateTransfer(3L, transfer);
+    @Test
+    void givenId_whenGetTransferById_thenReturnTransfer()
+            throws TransferUnknownException {
+        Transfer result = transferServiceSUT.getTransferById(2L);
+
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void givenIdUnknown_whenGetTransferById_throwTransferUnknownException() {
+        long idUnknown = 12;
+        assertThatThrownBy(() -> transferServiceSUT.getTransferById(idUnknown))
+                .isInstanceOf(TransferUnknownException.class);
+    }
+
+    @Test
+    @Transactional
+    void givenTransferAndId_whenUpdateTransfer_thenReturnTransferUpdated()
+            throws TransferUnknownException {
+        Transfer transferUpdate = new Transfer();
+        transferUpdate.setType(TransferType.DEBIT);
+        transferUpdate.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
+
+        Transfer result = transferServiceSUT.updateTransfer(3L, transferUpdate);
 
         assertThat(result.getType()).isEqualTo(TransferType.DEBIT);
         assertThat(result.getPaymentMethod()).isEqualTo(PaymentMethod.BANK_TRANSFER);
@@ -61,91 +79,88 @@ class TransferServiceIT {
         Test of deleting a transfer.
      */
     @Test
+    @Transactional
     void givenId_whenDeleteTransferById_thenTransferDeleted()
-            throws Exception {
-        User user = new User("deejay", "yaw", "deejayyaw@gmail.com", "password");
-        user = userService.addUser(user);
-        Transfer transfer = new Transfer(LocalDateTime.now(),
-                TransferType.DEBIT,
-                PaymentMethod.BANK_TRANSFER,
-                40.34F, user);
-        Transfer result = transferService.addTransfer(transfer);
+            throws TransferUnknownException {
+        Transfer transfer = transferServiceSUT.getTransferById(2L);
+        assertThat(transfer).isNotNull();
 
-        transferService.deleteTransferById(result.getIdTransfer());
-
-        assertThat(transferService.getTransferById(result.getIdTransfer())).isEmpty();
-
-        userService.deleteUser(user.getIdUser());
+        transferServiceSUT.deleteTransferById(2L);
+        assertThatThrownBy(() -> transferServiceSUT.getTransferById(2L))
+                .isInstanceOf(TransferUnknownException.class);
     }
 
     /*
         Test about interaction between user and transfer
      */
     @Test
-    void givenEmailAndInformationTransfer_whenMakeTransfer_thenReturnUser()
+    void givenParameters_whenMakeCreditTransfer_thenReturnTransferAndDBUpdate()
             throws Exception {
-        String email = "rayallen@gmail.com";
-        User user = userService.getUserByEmail(email);
-        float balance = user.getBalance();
-        TransferType type = TransferType.CREDIT;
-        PaymentMethod paymentMethod = PaymentMethod.BANK_TRANSFER;
-        float amount = 45.00F;
 
-        transferService.makeTransfer(email, type, paymentMethod, amount);
+        this.user = new User("white"
+                , "jojo"
+                , "jojowhite@gmail.com"
+                , "password");
+        userService.addUser(this.user);
 
-        User userUpdate = userService.getUserByEmail(email);
-        float balanceUpdate = userUpdate.getBalance();
+        BigDecimal amountTransfer = BigDecimal.valueOf(5634, 2);
+        BigDecimal balanceBefore = userService.getUserByEmail(this.user.getEmail())
+                .getBalance();
 
-        assertThat(balanceUpdate - balance).isEqualTo(amount);
+        this.transfer = transferServiceSUT.makeTransfer(this.user.getEmail()
+                , TransferType.CREDIT
+                , PaymentMethod.BANK_TRANSFER
+                , amountTransfer
+        );
 
-        user.setBalance(0F);
-        user.setEmail(null);
-        userService.updateUser(user.getIdUser(), user);
+        BigDecimal balanceAfter = userService.getUserByEmail(this.user.getEmail())
+                .getBalance();
+
+        assertThat(this.transfer).isNotNull();
+        assertThat(balanceAfter.subtract(amountTransfer)).isEqualTo(balanceBefore);
     }
 
     @Test
-    void givenInformationTransfer_whenMakeTransfer_thenUpdateBalanceUser()
+    void givenParameters_whenMakeDebitTransfer_thenReturnTransferAndDBUpdate()
             throws Exception {
-        float actualBalance = 234.00F;
-        float amountTransfer = 135.87F;
-        User user = new User("deejay", "yaw", "deejayyaw@gmail.com",
-                "password", actualBalance);
+        BigDecimal actualBalance = BigDecimal.valueOf(23400, 2);
+        BigDecimal amountTransfer = BigDecimal.valueOf(13634, 2);
 
-        user = userService.addUser(user);
+        this.user = new User("iverson"
+                , "allen"
+                , "alleniverson@gmail.com"
+                , "password");
+        userService.addUser(user);
+        User updateBalance = new User();
+        updateBalance.setBalance(actualBalance);
+        userService.updateUser(this.user.getIdUser(), updateBalance);
 
-        transferService.makeTransfer("deejayyaw@gmail.com",
-                TransferType.DEBIT, PaymentMethod.BANK_TRANSFER, amountTransfer);
+        this.transfer = transferServiceSUT.makeTransfer(this.user.getEmail(),
+                TransferType.DEBIT, PaymentMethod.BANK_TRANSFER,
+                amountTransfer);
 
-        User userUpdate = userService.getUserById(user.getIdUser());
-        float balanceUpdate = userUpdate.getBalance();
+        BigDecimal result = userService.getUserById(this.user.getIdUser())
+                .getBalance();
 
-        BigDecimal result =
-                new BigDecimal(actualBalance - amountTransfer).setScale(2, RoundingMode.HALF_UP);
-        assertThat(balanceUpdate).isEqualTo(result.floatValue());
-
-        userService.deleteUser(user.getIdUser());
+        assertThat(this.transfer).isNotNull();
+        assertThat(result).isEqualTo(actualBalance.subtract(amountTransfer));
     }
 
     @Test
     void givenBadAmountTransfer_whenMakeTransferDebit_throwAmountTransferException()
             throws Exception {
-        float actualBalance = 234.00F;
-        float amountTransfer = 356.23F;
-        User user = new User("deejay", "yaw", "deejayyaw@gmail.com",
-                "password", actualBalance);
+        BigDecimal amountTransfer = BigDecimal.valueOf(63527, 2);
+        this.user = new User("iverson"
+                , "allen"
+                , "alleniverson@gmail.com"
+                , "password");
+        userService.addUser(user);
 
-        user = userService.addUser(user);
-
-        assertThatThrownBy(() -> transferService.makeTransfer("deejayyaw" +
-                        "@gmail.com",
-                TransferType.DEBIT, PaymentMethod.BANK_TRANSFER, amountTransfer))
+        assertThatThrownBy(() -> transferServiceSUT.makeTransfer(this.user.getEmail(),
+                TransferType.DEBIT, PaymentMethod.BANK_TRANSFER,
+                amountTransfer))
                 .isInstanceOf(AmountTransferException.class);
-
-        userService.deleteUser(user.getIdUser());
     }
-
-
-
 
 
 }

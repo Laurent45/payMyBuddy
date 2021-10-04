@@ -3,8 +3,10 @@ package com.outsider.paymybuddy.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Set;
 
@@ -13,6 +15,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@DynamicUpdate
 public class User {
 
     @Id
@@ -32,8 +35,8 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "balance", columnDefinition = "DECIMAL(10, 2) default 0")
-    private float balance;
+    @Column(name = "balance", precision = 10, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
 
     /*
         Fields about to relations between entities.
@@ -72,21 +75,12 @@ public class User {
         this.password = password;
     }
 
-    public User(String lastName, String firstName, String email, String password, float balance) {
-        this.lastName = lastName;
-        this.firstName = firstName;
-        this.email = email;
-        this.password = password;
-        this.balance = balance;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Float.compare(user.balance, balance) == 0
-                && lastName.equals(user.lastName)
+        return lastName.equals(user.lastName)
                 && firstName.equals(user.firstName)
                 && email.equals(user.email)
                 && password.equals(user.password);
@@ -94,7 +88,7 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(lastName, firstName, email, password, balance);
+        return Objects.hash(lastName, firstName, email, password);
     }
 
     @Override

@@ -5,11 +5,14 @@ import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.service.impl.UserServiceImpl;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,42 +23,53 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UserServiceIT {
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserServiceImpl userServiceSUT;
 
-    /*
-        Test of creating a user in DB
-     */
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        user = null;
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (user != null && user.getIdUser() != null) {
+            userServiceSUT.deleteUser(user.getIdUser());
+        }
+    }
+
     @Test
     void givenUser_whenAddUser_thenReturnUserSaved()
             throws Exception {
-        User user = new User("Frazier"
+        this.user = new User("Frazier"
                 , "Jo"
                 , "frazierjo@gmail.com"
                 , "password");
 
-        User userSaved = userService.addUser(user);
-        user.setBalance(0.00F);
+        User userSaved = userServiceSUT.addUser(this.user);
 
-        assertThat(userSaved).isEqualTo(user);
+        assertThat(userSaved).isEqualTo(this.user);
         assertThat(userSaved.getIdUser()).isNotZero();
-
-        userService.deleteUser(userSaved.getIdUser());
+        assertThat(userSaved.getBalance()).isEqualTo(BigDecimal.ZERO);
     }
 
     @Test
     void givenUserWithEmailAlreadyUsed_whenAddUser_throwEmailAlreadyUsed() {
-        User user = new User("deejay", "yoan", "lebronjames@gmail.com",
-                "password");
+        this.user = new User("deejay"
+                , "yoan"
+                , "lebronjames@gmail.com"
+                , "password");
 
-        assertThatThrownBy(() -> userService.addUser(user))
+        assertThatThrownBy(() -> userServiceSUT.addUser(this.user))
                 .isInstanceOf(EmailAlreadyUsedException.class);
     }
 
     @Test
     void givenUserWithFieldsNull_whenAddUser_throwConstrainOfCreationNonRespected() {
-        User user = new User();
+        this.user = new User();
 
-        assertThatThrownBy(() -> userService.addUser(user))
+        assertThatThrownBy(() -> userServiceSUT.addUser(this.user))
                 .isInstanceOf(ConstraintErrorException.class);
     }
 
@@ -66,36 +80,44 @@ class UserServiceIT {
     @Test
     void whenGetAllUsers_thenReturnIterableUsers() {
         List<User> someUsers = List.of(
-                new User("harden", "james", "jamesharden@gmail.com",
-                        "password", 0.00F),
-                new User("allen", "ray", "rayallen@gmail.com", "password",
-                        0.00F)
+                new User("harden"
+                        , "james"
+                        , "jamesharden@gmail.com"
+                        , "password"),
+                new User("allen"
+                        , "ray"
+                        , "rayallen@gmail.com"
+                        , "password")
         );
 
-        List<User> result = userService.getUsers();
+        List<User> result = userServiceSUT.getUsers();
 
-        assertThat(result.size()).isGreaterThanOrEqualTo(4);
+        assertThat(result.size()).isEqualTo(5);
         assertThat(result).containsAll(someUsers);
     }
 
     @Test
     void givenId_whenGetUserById_thenReturnUser() throws UserUnknownException {
-        User user = new User("harden", "james", "jamesharden@gmail.com",
-                "password");
+        this.user = new User("harden"
+                , "james"
+                , "jamesharden@gmail.com"
+                , "password");
 
-        User result = userService.getUserById(1L);
+        User result = userServiceSUT.getUserById(1L);
 
-        assertThat(result).isEqualTo(user);
+        assertThat(result).isEqualTo(this.user);
     }
 
     @Test
     void givenEmail_whenGetUserByEmail_thenReturnUser() throws UserUnknownException {
-        User user = new User("james", "lebron", "lebronjames@gmail.com",
-                "password", 0.00F);
+        this.user = new User("james"
+                , "lebron"
+                , "lebronjames@gmail.com"
+                , "password");
 
-        User result = userService.getUserByEmail("lebronjames@gmail.com");
+        User result = userServiceSUT.getUserByEmail("lebronjames@gmail.com");
 
-        assertThat(result).isEqualTo(user);
+        assertThat(result).isEqualTo(this.user);
     }
 
     /*
@@ -103,19 +125,25 @@ class UserServiceIT {
      */
 
     @Test
-    @Transactional
     void givenUserAndId_whenUpdateUser_thenReturnUserUpdated()
-            throws EmailAlreadyUsedException, UserUnknownException {
-        User user = new User();
-        user.setFirstName("kevin");
-        user.setLastName("durant");
-        user.setEmail("kevindurant@gmail.com");
+            throws Exception {
+        this.user = new User("kobe"
+                , "bryant"
+                , "kobebryant@gmail.com"
+                , "kobe_password");
+        userServiceSUT.addUser(this.user);
 
-        User userUpdated = userService.updateUser(5L, user);
+        User userUpdate = new User("malone"
+                , "karl"
+                , "karlmalone@gmail.com"
+                , "new_password");
 
-        assertThat(userUpdated.getLastName()).isEqualTo("durant");
-        assertThat(userUpdated.getFirstName()).isEqualTo("kevin");
-        assertThat(userUpdated.getEmail()).isEqualTo("kevindurant@gmail.com");
+        this.user = userServiceSUT.updateUser(this.user.getIdUser(), userUpdate);
+
+        assertThat(this.user.getFirstName()).isEqualTo("karl");
+        assertThat(this.user.getLastName()).isEqualTo("malone");
+        assertThat(this.user.getEmail()).isEqualTo("karlmalone@gmail.com");
+        assertThat(this.user.getPassword()).isEqualTo("new_password");
     }
 
     @Test
@@ -123,7 +151,7 @@ class UserServiceIT {
         User user = new User();
         user.setEmail("mikejames@gmail.com");
 
-        assertThatThrownBy(() -> userService.updateUser(1L, user))
+        assertThatThrownBy(() -> userServiceSUT.updateUser(1L, user))
                 .isInstanceOf(EmailAlreadyUsedException.class);
     }
 
@@ -136,11 +164,11 @@ class UserServiceIT {
     void givenId_whenDeleteUser_thenUpdateDB()
             throws UserUnknownException {
 
-        User user = userService.getUserById(3L);
+        User user = userServiceSUT.getUserById(3L);
         assertThat(user).isNotNull();
 
-        userService.deleteUser(3L);
-        assertThatThrownBy(() -> userService.getUserById(3L))
+        userServiceSUT.deleteUser(3L);
+        assertThatThrownBy(() -> userServiceSUT.getUserById(3L))
                 .isInstanceOf(UserUnknownException.class);
     }
 
@@ -149,7 +177,7 @@ class UserServiceIT {
     void givenEmail_whenGetEmailsOfUsersConnected_thenReturnAnEmailList()
             throws UserUnknownException {
         String email = "jamesharden@gmail.com";
-        List<String> emails = userService.getEmailsOfUsersConnected(email);
+        List<String> emails = userServiceSUT.getEmailsOfUsersConnected(email);
 
         assertThat(emails).containsAll(List.of("lebronjames@gmail.com",
                 "mikejames@gmail.com", "kevindurant@gmail.com"));
@@ -158,7 +186,7 @@ class UserServiceIT {
     @Test
     void givenEmailUnknown_whenGetEmailsOfUsersConnected_throwUserUnknownException() {
         String emailUnknown = "emailUnknown@gmail.com";
-        assertThatThrownBy(() -> userService.getEmailsOfUsersConnected(emailUnknown))
+        assertThatThrownBy(() -> userServiceSUT.getEmailsOfUsersConnected(emailUnknown))
                 .isInstanceOf(UserUnknownException.class);
     }
 
@@ -169,12 +197,12 @@ class UserServiceIT {
         String emailUser = "jamesharden@gmail.com";
         String emailToDelete = "lebronjames@gmail.com";
         int nbConnectionsBefore =
-                userService.getEmailsOfUsersConnected(emailUser).size();
+                userServiceSUT.getEmailsOfUsersConnected(emailUser).size();
 
-        userService.manageAConnection(emailUser, emailToDelete, false);
+        userServiceSUT.manageAConnection(emailUser, emailToDelete, false);
 
         int nbConnectionsAfter =
-                userService.getEmailsOfUsersConnected(emailUser).size();
+                userServiceSUT.getEmailsOfUsersConnected(emailUser).size();
 
         assertThat(nbConnectionsBefore - nbConnectionsAfter).isEqualTo(1);
     }
@@ -186,12 +214,12 @@ class UserServiceIT {
         String emailUser = "jamesharden@gmail.com";
         String emailToAdd = "rayallen@gmail.com";
         int nbConnectionsBefore =
-                userService.getEmailsOfUsersConnected(emailUser).size();
+                userServiceSUT.getEmailsOfUsersConnected(emailUser).size();
 
-        userService.manageAConnection(emailUser, emailToAdd, true);
+        userServiceSUT.manageAConnection(emailUser, emailToAdd, true);
 
         int nbConnectionsAfter =
-                userService.getEmailsOfUsersConnected(emailUser).size();
+                userServiceSUT.getEmailsOfUsersConnected(emailUser).size();
 
         assertThat(nbConnectionsBefore + 1).isEqualTo(nbConnectionsAfter);
     }
