@@ -53,6 +53,16 @@ public interface IUserService {
     User getUserByEmail(String email) throws UserUnknownException;
 
     /**
+     * Read - get a user by its email and password
+     * @param email email's user
+     * @param password password'user
+     * @return a user object
+     * @throws UserUnknownException none user in DB whit this parameter
+     */
+    User getUserByEmailAndPassword(String email, String password)
+    throws UserUnknownException;
+
+    /**
      * Read - get all users connected of the user identified by its email.
      * @param email - email's user
      * @return A user list of users connected

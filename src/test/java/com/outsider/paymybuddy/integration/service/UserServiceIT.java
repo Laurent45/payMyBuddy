@@ -4,7 +4,7 @@ import com.outsider.paymybuddy.exception.ConstraintErrorException;
 import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.model.User;
-import com.outsider.paymybuddy.service.impl.UserServiceImpl;
+import com.outsider.paymybuddy.service.IUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UserServiceIT {
 
     @Autowired
-    private UserServiceImpl userServiceSUT;
+    private IUserService userServiceSUT;
 
     private User user;
 
@@ -97,7 +97,8 @@ class UserServiceIT {
     }
 
     @Test
-    void givenId_whenGetUserById_thenReturnUser() throws UserUnknownException {
+    void givenId_whenGetUserById_thenReturnUser()
+            throws UserUnknownException {
         this.user = new User("harden"
                 , "james"
                 , "jamesharden@gmail.com"
@@ -109,13 +110,28 @@ class UserServiceIT {
     }
 
     @Test
-    void givenEmail_whenGetUserByEmail_thenReturnUser() throws UserUnknownException {
+    void givenEmail_whenGetUserByEmail_thenReturnUser()
+            throws UserUnknownException {
         this.user = new User("james"
                 , "lebron"
                 , "lebronjames@gmail.com"
                 , "password");
 
         User result = userServiceSUT.getUserByEmail("lebronjames@gmail.com");
+
+        assertThat(result).isEqualTo(this.user);
+    }
+
+    @Test
+    void givenEmailAndPassword_whenGetUserByEmailAndPassword_thenReturnUser()
+            throws UserUnknownException {
+        this.user = new User("james"
+                , "lebron"
+                , "lebronjames@gmail.com"
+                , "password");
+
+        User result = userServiceSUT.getUserByEmailAndPassword("lebronjames" +
+                "@gmail.com", "password");
 
         assertThat(result).isEqualTo(this.user);
     }

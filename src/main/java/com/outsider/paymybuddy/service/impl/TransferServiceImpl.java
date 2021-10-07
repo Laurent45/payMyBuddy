@@ -7,6 +7,7 @@ import com.outsider.paymybuddy.model.TransferType;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.repository.TransferRepository;
 import com.outsider.paymybuddy.service.ITransferService;
+import com.outsider.paymybuddy.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -20,18 +21,18 @@ import java.time.LocalDateTime;
 public class TransferServiceImpl implements ITransferService {
 
     private final TransferRepository transferRepository;
-    private final UserServiceImpl userService;
+    private final IUserService userService;
 
     @Override
     public Transfer addTransfer(Transfer transfer) {
-        log.debug("addTransfer method called, parameter -> transfer: "
+        log.info("addTransfer method called, parameter -> transfer: "
                 + transfer);
         return transferRepository.save(transfer);
     }
 
     @Override
     public Transfer getTransferById(long id) throws TransferUnknownException {
-        log.debug("getTransferById method is called, parameter -> id: " + id);
+        log.info("getTransferById method is called, parameter -> id: " + id);
 
         return transferRepository.findById(id)
                 .orElseThrow(() -> new TransferUnknownException("none " +
@@ -40,7 +41,7 @@ public class TransferServiceImpl implements ITransferService {
 
     @Override
     public Transfer updateTransfer(long id, Transfer transfer) throws TransferUnknownException {
-        log.debug("updateTransfer method is called, parameter -> id: " + id
+        log.info("updateTransfer method is called, parameter -> id: " + id
                 + "/ transfer: " + transfer);
 
         Transfer currentTransfer = getTransferById(id);
@@ -67,7 +68,7 @@ public class TransferServiceImpl implements ITransferService {
 
     @Override
     public void deleteTransferById(Long id) {
-        log.debug("deleteTransferById method called, parameter -> id: " + id);
+        log.info("deleteTransferById method called, parameter -> id: " + id);
         transferRepository.deleteById(id);
     }
 
@@ -79,7 +80,7 @@ public class TransferServiceImpl implements ITransferService {
             throws UserUnknownException
             , AmountTransferException
             , EmailAlreadyUsedException {
-        log.debug(String.format("makeTransfer method called, parameters -> " +
+        log.info(String.format("makeTransfer method called, parameters -> " +
                 "email: %s / transferType: %s / paymentMethod: %s / amount " +
                 "%f", email, type.toString(), paymentMethod.toString(), amount));
 

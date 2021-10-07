@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - PayMyBuddy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF"
+          crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">´
+
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+
+</head>
+
+<body class="text-center">
+
+<main class="form-signin">
+    <form method="post" th:action="@{/login}">
+
+        <h1 class="h3 mb-3 fw-normal">Pay my Buddy</h1>
+
+        <p><span th:if="${errorMsg} != null" th:text="${errorMsg}"></span></p>
+
+        <div class="form-floating">
+            <input type="email" class="form-control"
+                   id="floatingInput"
+                   placeholder="Email"
+                   th:name="email">
+            <label for="floatingInput"><img th:src="@{/img/envelope.svg}"
+                                            alt="envelope icon" src="">Email</label>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control"
+                   id="floatingPassword"
+                   placeholder="Password" th:name="password">
+            <label for="floatingPassword"><img th:src="@{/img/asterisk.svg}"
+                                               alt="asterisk icon" src="">Password
+            </label>
+        </div>
+
+        <div class="checkbox mb-3">
+            <label>
+                <input type="checkbox" value="remember-me"> Remember me
+            </label>
+        </div>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Login
+        </button>
+    </form>
+</main>
+
+</body>
+</html>

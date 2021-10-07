@@ -5,6 +5,7 @@ import com.outsider.paymybuddy.model.Transaction;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.repository.TransactionRepository;
 import com.outsider.paymybuddy.service.ITransactionService;
+import com.outsider.paymybuddy.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,13 @@ import java.util.List;
 public class TransactionServiceImpl implements ITransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final UserServiceImpl userService;
+    private final IUserService userService;
 
 
     @Override
     public Transaction addTransaction(Transaction transaction)
             throws ConstraintErrorException {
-        log.debug("addTransaction method called, parameter -> transaction: "
+        log.info("addTransaction method called, parameter -> transaction: "
                 + transaction);
 
         if (transaction.getAmount() == null
@@ -41,7 +42,7 @@ public class TransactionServiceImpl implements ITransactionService {
 
     @Override
     public void deleteTransaction(Long idTransaction) {
-        log.debug("deleteTransaction method called, parameter -> " +
+        log.info("deleteTransaction method called, parameter -> " +
                 "idTransaction: " + idTransaction);
         transactionRepository.deleteById(idTransaction);
     }
@@ -49,7 +50,7 @@ public class TransactionServiceImpl implements ITransactionService {
     @Override
     public Transaction getTransactionById(long idTransaction)
             throws TransactionUnknownException {
-        log.debug("getTransactionById method is called, parameter -> " +
+        log.info("getTransactionById method is called, parameter -> " +
                 "idTransaction: " + idTransaction);
 
         return transactionRepository.findById(idTransaction)
@@ -61,7 +62,7 @@ public class TransactionServiceImpl implements ITransactionService {
     public List<Transaction> getAllTransactionsOfUser(String emailUser,
                                                       boolean creditorDebtor)
             throws UserUnknownException {
-        log.debug("getAllTransactionOfUser method called, parameters -> " +
+        log.info("getAllTransactionOfUser method called, parameters -> " +
                 "emailUser: " + emailUser + "/ creditorDebtor: " + creditorDebtor);
 
         userService.getUserByEmail(emailUser);
@@ -80,7 +81,7 @@ public class TransactionServiceImpl implements ITransactionService {
             , String description) throws UserUnknownException,
             EmailAlreadyUsedException, ConstraintErrorException,
             AmountTransferException {
-        log.debug(String.format("makeTransaction method called, parameters ->" +
+        log.info(String.format("makeTransaction method called, parameters ->" +
                 " debtorEmail: %s / creditorEmail: %s / amountTransaction: " +
                 "%s", creditorEmail, debtorEmail, amountTransaction));
 
