@@ -1,0 +1,16 @@
+.navbar-brand {
+    color: rgb(255, 255, 255);
+    border-radius: 5px;
+    background-color: #63BA58;
+    font-weight: normal;
+}
+
+.navbar-nav .nav-item .nav-link {
+    padding-left: 20px;
+    padding-right: 20px;
+    color: rgb(0, 0, 0);
+}
+
+.navbar-nav .nav-item .nav-link:hover {
+    color: #0168D9;
+}

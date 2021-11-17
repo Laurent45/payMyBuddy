@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Header : fragments</title>
+    <link
+            th:href=@"https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF"
+            crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    ´
+
+    <link rel="stylesheet" th:href="@{/css/login.css}"
+          href="/static/css/login.css">
+
+</head>
+<body>
+    <div class="container" th:fragment="header (page_name)">
+        <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+            <a href="/"
+               class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                <svg class="bi me-2" width="40" height="32">
+                    <use xlink:href="#bootstrap"/>
+                </svg>
+                <span class="fs-4">Simple header</span>
+            </a>
+
+            <ul class="nav nav-pills">
+                <li class="nav-item"><a
+                        th:href="@{/home.html}"
+                        th:class="${#strings.equals(page_name, 'home') ? 'nav-link active' : 'nav-link'}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'home') ? 'page' : null}"
+                >Home
+                </a></li>
+                <li class="nav-item"><a
+                        th:href="@{/transfer.html}"
+                        th:class="'nav-link' + ${#strings.equals(page_name, 'transfer') ? ' active' : ''}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'transfer') ? 'page' : null}"
+                        aria-current="page">Transfer
+                </a></li>
+                <li class="nav-item"><a
+                        th:href="@{profile.html}"
+                        th:class="'nav-link' + ${#strings.equals(page_name, 'profile') ? ' active' : ''}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'profile') ? 'page' : null}"
+                        aria-current="page">Profile
+                </a></li>
+                <li class="nav-item"><a
+                        th:href="@{contact.html}"
+                        th:class="'nav-link' + ${#strings.equals(page_name, 'contact') ? ' active' : ''}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'contact') ? 'page' : null}"
+                        aria-current="page">Contact
+                </a></li>
+                <li>
+                    <button type="button" class="btn btn-warning">Log off
+                    </button>
+                </li>
+            </ul>
+        </header>
+    </div>
+</body>
+</html>
