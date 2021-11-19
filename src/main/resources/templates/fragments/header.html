@@ -14,32 +14,32 @@
 <body>
     <div class="container" th:fragment="header (page_name)">
         <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-            <a th:href="@{/home.html}"
+            <a th:href="@{/templates/transfer.html}"
                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
                 <span class="fs-4 header_logo">PayMyBuddy</span>
             </a>
 
             <ul class="nav nav-pills align-items-center">
                 <li class="nav-item mx-1"><a
-                        th:href="@{/home.html}"
+                        th:href="home"
                         th:class="${#strings.equals(page_name, 'home') ? 'nav-link active' : 'nav-link'}"
                         th:attrappend="aria-current=${#strings.equals(page_name, 'home') ? 'page' : null}"
                 >Home
                 </a></li>
                 <li class="nav-item mx-1"><a
-                        th:href="@{/transfer.html}"
+                        th:href="transfer"
                         th:class="'nav-link' + ${#strings.equals(page_name, 'transfer') ? ' active' : ''}"
                         th:attrappend="aria-current=${#strings.equals(page_name, 'transfer') ? 'page' : null}"
                         aria-current="page">Transfer
                 </a></li>
                 <li class="nav-item mx-1"><a
-                        th:href="@{profile.html}"
+                        th:href="profile"
                         th:class="'nav-link' + ${#strings.equals(page_name, 'profile') ? ' active' : ''}"
                         th:attrappend="aria-current=${#strings.equals(page_name, 'profile') ? 'page' : null}"
                         aria-current="page">Profile
                 </a></li>
                 <li class="nav-item mx-1"><a
-                        th:href="@{contact.html}"
+                        th:href="contact"
                         th:class="'nav-link' + ${#strings.equals(page_name, 'contact') ? ' active' : ''}"
                         th:attrappend="aria-current=${#strings.equals(page_name, 'contact') ? 'page' : null}"
                         aria-current="page">Contact
