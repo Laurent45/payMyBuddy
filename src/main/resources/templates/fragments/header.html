@@ -14,7 +14,7 @@
 <body>
     <div class="container" th:fragment="header (page_name)">
         <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-            <a th:href="@{/templates/transfer.html}"
+            <a th:href="@{home}"
                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
                 <span class="fs-4 header_logo">PayMyBuddy</span>
             </a>
@@ -25,12 +25,6 @@
                         th:class="${#strings.equals(page_name, 'home') ? 'nav-link active' : 'nav-link'}"
                         th:attrappend="aria-current=${#strings.equals(page_name, 'home') ? 'page' : null}"
                 >Home
-                </a></li>
-                <li class="nav-item mx-1"><a
-                        th:href="transfer"
-                        th:class="'nav-link' + ${#strings.equals(page_name, 'transfer') ? ' active' : ''}"
-                        th:attrappend="aria-current=${#strings.equals(page_name, 'transfer') ? 'page' : null}"
-                        aria-current="page">Transfer
                 </a></li>
                 <li class="nav-item mx-1"><a
                         th:href="profile"
