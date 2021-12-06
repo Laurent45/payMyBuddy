@@ -22,14 +22,13 @@
 
             <h1 class="h3 mb-3 fw-normal">Pay my Buddy</h1>
 
-            <p class="text-danger"><span th:if="${errorMsg} != null"
-                                         th:text="${errorMsg}"></span></p>
+            <p class="text-danger"><span th:if="${loginError}">Log in error</span></p>
 
             <div class="form-floating">
                 <input type="email" class="form-control"
                        id="floatingInput"
                        placeholder="Email"
-                       th:name="email">
+                       th:name="username">
                 <label for="floatingInput"><img th:src="@{/img/envelope.svg}"
                                                 alt="envelope icon"
                                                 src="/static/img/envelope.svg">Email
@@ -53,6 +52,10 @@
             <button class="w-100 btn btn-lg btn-primary" type="submit">Login
             </button>
         </form>
+        <div class="container border border-5 mt-3">
+            <p>New to PayMybuddy?</p>
+            <a th:href="@{signUp}">Create an account.</a>
+        </div>
     </main>
 </body>
 </html>

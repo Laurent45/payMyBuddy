@@ -8,14 +8,15 @@ import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.service.ITransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
-
-import javax.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 @Controller
 @RequiredArgsConstructor
+@SessionAttributes({"result"})
 public class TransactionController {
 
     private final ITransactionService transactionService;
@@ -24,7 +25,7 @@ public class TransactionController {
     public String makeTransfer(
             @ModelAttribute("transaction") TransactionDto t
             , @SessionAttribute("userEmail") String emailDebtor
-            , HttpSession session
+            , Model model
     )
             throws UserUnknownException, ConstraintErrorException
             , EmailAlreadyUsedException {
@@ -37,10 +38,10 @@ public class TransactionController {
                     , t.getDescription()
             );
         } catch (AmountTransferException e) {
-            session.setAttribute("result", -1);
+            model.addAttribute("result", -1);
             return "redirect:/home";
         }
-        session.setAttribute("result", 1);
+        model.addAttribute("result", 1);
         return "redirect:/home";
     }
 }

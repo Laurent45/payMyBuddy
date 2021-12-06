@@ -8,6 +8,7 @@ import java.util.Set;
 public interface MyMapper {
 
     UserDto userToUserDto(User user);
+    User userDtoToUser(UserDto userDto);
     Set<UserDto> setUserToSetUserDto(Set<User> users);
 
 }
