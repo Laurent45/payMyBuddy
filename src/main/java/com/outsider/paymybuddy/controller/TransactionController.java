@@ -5,13 +5,14 @@ import com.outsider.paymybuddy.exception.AmountTransferException;
 import com.outsider.paymybuddy.exception.ConstraintErrorException;
 import com.outsider.paymybuddy.exception.EmailAlreadyUsedException;
 import com.outsider.paymybuddy.exception.UserUnknownException;
+import com.outsider.paymybuddy.model.CustomUserDetails;
 import com.outsider.paymybuddy.service.ITransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 @Controller
@@ -24,11 +25,13 @@ public class TransactionController {
     @PostMapping("/transaction")
     public String makeTransfer(
             @ModelAttribute("transaction") TransactionDto t
-            , @SessionAttribute("userEmail") String emailDebtor
+            , Authentication authentication
             , Model model
     )
             throws UserUnknownException, ConstraintErrorException
             , EmailAlreadyUsedException {
+        String emailDebtor = ((CustomUserDetails) authentication.getPrincipal())
+                .getUsername();
         try {
             transactionService.makeTransaction(
                     emailDebtor

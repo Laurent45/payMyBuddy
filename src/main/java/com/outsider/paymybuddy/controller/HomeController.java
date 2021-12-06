@@ -2,11 +2,13 @@ package com.outsider.paymybuddy.controller;
 
 import com.outsider.paymybuddy.dto.TransactionDto;
 import com.outsider.paymybuddy.exception.UserUnknownException;
+import com.outsider.paymybuddy.model.CustomUserDetails;
 import com.outsider.paymybuddy.model.Transaction;
 import com.outsider.paymybuddy.model.User;
 import com.outsider.paymybuddy.service.ITransactionService;
 import com.outsider.paymybuddy.service.IUserService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,25 +25,32 @@ public class HomeController {
     private final IUserService userService;
     private final ITransactionService transactionService;
 
+
     @ModelAttribute("connections")
-    private List<String> getConnections(
-            @SessionAttribute("userEmail") String email)
+    private List<String> getConnections(Authentication authentication)
             throws UserUnknownException {
-        return userService.getEmailsOfUsersConnected(email);
+        return userService.getEmailsOfUsersConnected(
+                ((CustomUserDetails)authentication.getPrincipal())
+                        .getUsername());
     }
 
     @ModelAttribute("transactions")
     private List<Transaction> getTransactions(
-            @SessionAttribute("userEmail") String email)
+            Authentication authentication)
             throws UserUnknownException {
-        return transactionService.getAllTransactionsOfUser(email,
+        return transactionService.getAllTransactionsOfUser(
+                ((CustomUserDetails) authentication.getPrincipal())
+                        .getUsername(),
                 false);
     }
 
     @ModelAttribute("wallet")
-    private String getWallet(@SessionAttribute("userEmail") String email)
+    private String getWallet(Authentication authentication)
             throws UserUnknownException {
-        User user = userService.getUserByEmail(email);
+        User user = userService.getUserByEmail(
+                ((CustomUserDetails) authentication.getPrincipal())
+                        .getUsername()
+        );
         return user.getBalance().toString();
     }
 
