@@ -25,6 +25,12 @@
         <div th:if="${result} == -1" class="alert alert-danger" role="alert" auto-close="3000">
             <strong>Failed</strong> ! Check your wallet.
         </div>
+        <div th:if="${result} == 2" class="alert alert-success" role="alert" auto-close="3000">
+            <strong>Success</strong> ! Your add has been done.
+        </div>
+        <div th:if="${result} == -2" class="alert alert-danger" role="alert" auto-close="3000">
+            <strong>Failed</strong> ! Your add failed, email is unknown.
+        </div>
     </div>
 
     <div class="container">
@@ -32,7 +38,7 @@
     </div>
 
     <div class="container">
-        <p class="text-end" th:text="'My wallet: ' + ${wallet}"> </p>
+        <p class="text-end" th:text="'My wallet: ' + ${wallet}"></p>
     </div>
 
     <div class="container">
@@ -41,8 +47,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Transaction</h5>
-                        <p class="card-text">With supporting text below as a
-                            natural lead-in to additional content.</p>
+                        <p class="card-text">Make a transaction with a connection</p>
                         <!-- Button trigger transaction modal -->
                         <button type="button" class="btn btn-primary"
                                 data-bs-toggle="modal"
@@ -67,7 +72,6 @@
                                                     aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-
                                             <div class="modal-body">
                                                 <div class="form-group">
                                                     <label class="col-form-label">Select a connection:</label>
@@ -80,9 +84,6 @@
                                                         <option th:each="email : ${connections}"
                                                                 th:value="${email}"
                                                                 th:text="${email}">
-                                                        </option>
-                                                        <option value="email1">
-                                                            jamesharden@gmail.com
                                                         </option>
                                                     </select>
                                                 </div>
@@ -145,23 +146,85 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-sm-4">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Update your wallet</h5>
-                        <p class="card-text">With supporting text below as a natural
-                            lead-in to additional content.</p>
-                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                        <p class="card-text">Update your wallet</p>
+                        <a href="#" class="btn btn-primary">Update your wallet</a>
                     </div>
                 </div>
             </div>
+
+
             <div class="col-sm-4">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Add a connection</h5>
-                        <p class="card-text">With supporting text below as a natural
-                            lead-in to additional content.</p>
-                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                        <p class="card-text">Add a connection</p>
+                        <!--<a href="#" class="btn btn-primary">Add a connection</a>-->
+                        <button type="button" class="btn btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#connectionModal">
+                            Add a connection
+                        </button>
+                        <!-- Button trigger transaction modal -->
+                        <!-- Transaction modal -->
+                        <div class="modal fade" id="connectionModal" tabindex="-1"
+                             aria-labelledby="exampleModalLabel"
+                             aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form name="transaction_form" method="post" th:action="@{connection}">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"
+                                                id="connectionModalLabel">Add a connection</h5>
+                                            <button type="reset"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="modal-body">
+                                                <div class="form-group">
+                                                    <label class="col-form-label">New connection:</label>
+                                                    <textarea
+                                                            class="form-control"
+                                                            id="connection_email" th:name="connection"></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           value=""
+                                                           id="connectionCheck1"
+                                                           required="required">
+                                                    <label class="form-check-label"
+                                                           for="defaultCheck1">
+                                                        Confirm your choice
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="reset"
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+                                            <button type="reset"
+                                                    class="btn btn-warning">
+                                                Reset
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn btn-primary">
+                                                Submit
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -182,12 +245,12 @@
     <script th:src="@{'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'}"></script>
 
     <script>
-        $(function() {
+        $(function () {
             var alert = $('div.alert[auto-close]');
-            alert.each(function() {
+            alert.each(function () {
                 var that = $(this);
                 var time_period = that.attr('auto-close');
-                setTimeout(function() {
+                setTimeout(function () {
                     that.alert('close');
                 }, time_period);
             });

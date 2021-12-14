@@ -30,7 +30,7 @@ public class HomeController {
     private List<String> getConnections(Authentication authentication)
             throws UserUnknownException {
         return userService.getEmailsOfUsersConnected(
-                ((CustomUserDetails)authentication.getPrincipal())
+                ((CustomUserDetails) authentication.getPrincipal())
                         .getUsername());
     }
 

@@ -8,8 +8,8 @@ import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
-    private String userName;
-    private String password;
+    private final String userName;
+    private final String password;
 
     public CustomUserDetails(User user) {
         this.userName = user.getEmail();
