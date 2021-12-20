@@ -1,4 +1,4 @@
 # payMyBuddy
 money transfer app
 
-![img_1.png](img_1.png)
+https://github.com/Laurent45/payMyBuddy/issues/1#issue-1084497637
