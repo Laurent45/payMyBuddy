@@ -92,7 +92,6 @@ public class UserServiceImpl implements IUserService {
             }
             return userRepository.save(currentUser);
         }
-
         return currentUser;
     }
 

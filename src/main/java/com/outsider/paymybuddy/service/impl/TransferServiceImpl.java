@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -40,6 +41,7 @@ public class TransferServiceImpl implements ITransferService {
     }
 
     @Override
+    @Transactional
     public Transfer updateTransfer(long id, Transfer transfer) throws TransferUnknownException {
         log.info("updateTransfer method is called, parameter -> id: " + id
                 + "/ transfer: " + transfer);
@@ -73,6 +75,7 @@ public class TransferServiceImpl implements ITransferService {
     }
 
     @Override
+    @Transactional
     public Transfer makeTransfer(String email
             , TransferType type
             , PaymentMethod paymentMethod

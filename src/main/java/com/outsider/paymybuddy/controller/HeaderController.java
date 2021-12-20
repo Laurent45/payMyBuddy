@@ -4,7 +4,6 @@ import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.model.CustomUserDetails;
 import com.outsider.paymybuddy.model.Transaction;
 import com.outsider.paymybuddy.service.ITransactionService;
-import com.outsider.paymybuddy.service.IUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -17,7 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 public class HeaderController {
 
-    private final IUserService userService;
     private final ITransactionService transactionService;
 
     @ModelAttribute("transactions")
