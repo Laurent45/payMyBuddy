@@ -6,8 +6,8 @@ import com.outsider.paymybuddy.model.PaymentMethod;
 import com.outsider.paymybuddy.model.Transfer;
 import com.outsider.paymybuddy.model.TransferType;
 import com.outsider.paymybuddy.model.User;
-import com.outsider.paymybuddy.service.impl.TransferServiceImpl;
-import com.outsider.paymybuddy.service.impl.UserServiceImpl;
+import com.outsider.paymybuddy.service.ITransferService;
+import com.outsider.paymybuddy.service.IUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +25,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TransferServiceIT {
 
     @Autowired
-    private TransferServiceImpl transferServiceSUT;
+    private ITransferService transferServiceSUT;
     @Autowired
-    private UserServiceImpl userService;
+    private IUserService userService;
 
     private Transfer transfer;
     private User user;

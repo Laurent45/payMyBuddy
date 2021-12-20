@@ -11,9 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +25,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User addUser(User user)
             throws EmailAlreadyUsedException, ConstraintErrorException {
-        log.debug("addUser method called, parameter -> User: " + user);
+        log.info("addUser method called, parameter -> User: " + user);
 
         if (isEmailAlreadyExist(user.getEmail())) {
             throw new EmailAlreadyUsedException("email already used: "
@@ -47,14 +45,14 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public List<User> getUsers() {
-        log.debug("getUsers method called, parameter -> none");
+        log.info("getUsers method called, parameter -> none");
 
         return userRepository.findAll();
     }
 
     @Override
     public User getUserById(long idUser) throws UserUnknownException {
-        log.debug("getUserById method called, parameter -> idUser: " + idUser);
+        log.info("getUserById method called, parameter -> idUser: " + idUser);
 
         return userRepository.findById(idUser)
                 .orElseThrow(() -> new UserUnknownException("none user in " +
@@ -65,7 +63,7 @@ public class UserServiceImpl implements IUserService {
     @Transactional
     public User updateUser(long id, User user)
             throws EmailAlreadyUsedException, UserUnknownException {
-        log.debug("updateUser method called, parameter -> idUser: " + id + "/" +
+        log.info("updateUser method called, parameter -> idUser: " + id + "/" +
                 " user: " + user);
 
         User currentUser = getUserById(id);
@@ -94,20 +92,19 @@ public class UserServiceImpl implements IUserService {
             }
             return userRepository.save(currentUser);
         }
-
         return currentUser;
     }
 
     @Override
     public void deleteUser(Long idUser) {
-        log.debug("deleteUser method called, parameter -> idUser: " + idUser);
+        log.info("deleteUser method called, parameter -> idUser: " + idUser);
 
         userRepository.deleteById(idUser);
     }
 
     @Override
     public User getUserByEmail(String email) throws UserUnknownException {
-        log.debug("getUserByEmail method is called, parameter -> email: "
+        log.info("getUserByEmail method is called, parameter -> email: "
                 + email);
 
         return userRepository.findByEmail(email)
@@ -116,9 +113,20 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public User getUserByEmailAndPassword(String email, String password)
+            throws UserUnknownException {
+        log.info("getUserByEmailAndPassword method called, parameters -> " +
+                "email: " + email + "/ password: " + password);
+
+        return userRepository.findByEmailAndPassword(email, password)
+                .orElseThrow(() -> new UserUnknownException("none user with " +
+                        "this email: " + email + " and password: " + password));
+    }
+
+    @Override
     public Set<User> getAllUsersConnected(String email)
             throws UserUnknownException {
-        log.debug("getAllUsersConnected method called, parameter -> email: "
+        log.info("getAllUsersConnected method called, parameter -> email: "
                 + email);
         User user = getUserByEmail(email);
 
@@ -128,7 +136,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public List<String> getEmailsOfUsersConnected(String email)
             throws UserUnknownException {
-        log.debug("getEmailsOfUsersConnected method called, parameter -> " +
+        log.info("getEmailsOfUsersConnected method called, parameter -> " +
                 "email: " + email);
         Set<User> users = getAllUsersConnected(email);
 
@@ -141,7 +149,7 @@ public class UserServiceImpl implements IUserService {
     public void manageAConnection(String emailUser, String emailUserConnected,
                                   boolean addRemove)
             throws UserUnknownException {
-        log.debug("deleteAConnection method called, parameters -> emailUser: "
+        log.info("deleteAConnection method called, parameters -> emailUser: "
                 + emailUser + "/ emailToDelete: " + emailUserConnected + "/ " +
                 "addRemove: " + addRemove);
 

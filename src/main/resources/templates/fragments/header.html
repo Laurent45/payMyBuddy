@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Header : fragments</title>
+    <link
+            th:href=@"https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF"
+            crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="container" th:fragment="header (page_name)">
+        <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+            <a th:href="@{home}"
+               class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                <span class="fs-4 header_logo">PayMyBuddy</span>
+            </a>
+
+            <ul class="nav nav-pills align-items-center">
+                <li class="nav-item mx-1"><a
+                        th:href="home"
+                        th:class="${#strings.equals(page_name, 'home') ? 'nav-link active' : 'nav-link'}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'home') ? 'page' : null}"
+                >Home
+                </a></li>
+                <li class="nav-item mx-1"><a
+                        th:href="profile"
+                        th:class="'nav-link' + ${#strings.equals(page_name, 'profile') ? ' active' : ''}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'profile') ? 'page' : null}"
+                        aria-current="page">Profile
+                </a></li>
+                <li class="nav-item mx-1"><a
+                        th:href="contact"
+                        th:class="'nav-link' + ${#strings.equals(page_name, 'contact') ? ' active' : ''}"
+                        th:attrappend="aria-current=${#strings.equals(page_name, 'contact') ? 'page' : null}"
+                        aria-current="page">Contact
+                </a></li>
+                <li class="nav-item mx-1">
+                    <form name="logoutForm" th:action="@{/logout}" method="post">
+                        <button type="submit" class="btn btn-outline-warning" value="Logout">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </header>
+    </div>
+</body>
+</html>

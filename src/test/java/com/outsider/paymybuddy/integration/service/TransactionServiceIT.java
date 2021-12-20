@@ -1,10 +1,13 @@
 package com.outsider.paymybuddy.integration.service;
 
-import com.outsider.paymybuddy.exception.*;
+import com.outsider.paymybuddy.exception.AmountTransferException;
+import com.outsider.paymybuddy.exception.ConstraintErrorException;
+import com.outsider.paymybuddy.exception.TransactionUnknownException;
+import com.outsider.paymybuddy.exception.UserUnknownException;
 import com.outsider.paymybuddy.model.Transaction;
 import com.outsider.paymybuddy.model.User;
-import com.outsider.paymybuddy.service.impl.TransactionServiceImpl;
-import com.outsider.paymybuddy.service.impl.UserServiceImpl;
+import com.outsider.paymybuddy.service.ITransactionService;
+import com.outsider.paymybuddy.service.IUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +26,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TransactionServiceIT {
 
     @Autowired
-    private TransactionServiceImpl transactionServiceSUT;
+    private ITransactionService transactionServiceSUT;
     @Autowired
-    private UserServiceImpl userService;
+    private IUserService userService;
 
     private Transaction transaction;
     private User userCreditor;
