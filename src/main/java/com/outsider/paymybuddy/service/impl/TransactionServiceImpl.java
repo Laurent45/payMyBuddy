@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -74,6 +75,7 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
     @Override
+    @Transactional
     public Transaction makeTransaction(String debtorEmail
             , String creditorEmail
             , BigDecimal amountTransaction

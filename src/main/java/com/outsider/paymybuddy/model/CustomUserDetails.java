@@ -1,6 +1,7 @@
 package com.outsider.paymybuddy.model;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -10,15 +11,17 @@ public class CustomUserDetails implements UserDetails {
 
     private final String userName;
     private final String password;
+    private final String role;
 
     public CustomUserDetails(User user) {
         this.userName = user.getEmail();
         this.password = user.getPassword();
+        this.role = user.getRole();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.singleton(new SimpleGrantedAuthority(this.role));
     }
 
     @Override

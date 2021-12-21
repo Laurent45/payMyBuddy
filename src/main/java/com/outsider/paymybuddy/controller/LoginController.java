@@ -25,4 +25,9 @@ public class LoginController {
         model.addAttribute("loginError", true);
         return "login";
     }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "<h1>admin</h1>";
+    }
 }

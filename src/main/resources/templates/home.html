@@ -147,12 +147,98 @@
                 </div>
             </div>
 
-            <div class="col-sm-4">
+
+
+            <div th:if="${isAdmin} == true" class="col-sm-4">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Update your wallet</h5>
-                        <p class="card-text">Update your wallet</p>
-                        <a href="#" class="btn btn-primary">Update your wallet</a>
+                        <h5 class="card-title">Update wallet</h5>
+                        <p class="card-text">You are an admin, you can update wallet of all users</p>
+                        <!-- Button trigger admin modal -->
+                        <button type="button" class="btn btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#adminModal">
+                            Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="adminModal" tabindex="-1"
+                 aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form name="admin_form" method="post"
+                              th:action="@{admin}">
+                            <div class="modal-header">
+                                <h5 class="modal-title"
+                                    id="adminLabel">Admin</h5>
+                                <button type="reset"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Select a connection:</label>
+                                        <select class="form-select"
+                                                required="required" th:name="user">
+                                            <option value=""
+                                                    disabled>Select a connection
+                                            </option>
+                                            <option th:each="user : ${allUsers}"
+                                                    th:value="${user.getEmail()}"
+                                                    th:text="${user.getEmail()}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Amount:</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                            </div>
+                                            <input required="required"
+                                                   type="number"
+                                                   min="0.01"
+                                                   step="0.01"
+                                                   value="0.00"
+                                                   id="priceAdmin"
+                                                   class="form-control"
+                                                   placeholder="Price"
+                                                   th:name="wallet">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               value=""
+                                               id="defaultCheck2"
+                                               required="required">
+                                        <label class="form-check-label"
+                                               for="defaultCheck1">
+                                            Confirm your transaction
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="reset"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                                <button type="reset"
+                                        class="btn btn-warning">
+                                    Reset
+                                </button>
+                                <button type="submit"
+                                        class="btn btn-primary">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

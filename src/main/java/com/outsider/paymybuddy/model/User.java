@@ -38,6 +38,9 @@ public class User {
     @Column(name = "balance", precision = 10, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Column
+    private String role;
+
     /*
         Fields about to relations between entities.
      */
